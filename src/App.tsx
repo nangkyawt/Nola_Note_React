@@ -1,59 +1,113 @@
-import React from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useState, useEffect } from "react";
+import type { Note } from "./types";
+import NewNoteCard from "./components/NewNoteCard";
+import NoteCard from "./components/NoteCards";
 
-// This test ensures:
-// 1. Flexbox & Centering (flex, items-center)
-// 2. Custom Colors & Gradients (from-indigo-500)
-// 3. Hover effects (hover:shadow-2xl)
-// 4. Responsive design (hidden vs block)
-// 5. Typography (font-bold, tracking-tight)
+const App: React.FC = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [showNewNote, setShowNewNote] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [search, setSearch] = useState("");
 
-const App = () => {
+  useEffect(() => {
+    const stored = localStorage.getItem("notes");
+    if (stored) setNotes(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
+
+  const addNote = (note: Note) => {
+    setNotes([note, ...notes]);
+    setShowNewNote(false);
+    setEditingNote(null);
+  };
+
+  const deleteNote = (id: number) => setNotes(notes.filter(n => n.id !== id));
+  const togglePin = (id: number) =>
+    setNotes(notes.map(n => (n.id === id ? { ...n, pinned: !n.pinned } : n)));
+
+  const editNote = (note: Note) => setEditingNote(note);
+
+  const filteredNotes = notes.filter(
+    n =>
+      n.title.toLowerCase().includes(search.toLowerCase()) ||
+      n.content.toLowerCase().includes(search.toLowerCase()) ||
+      (n.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase())) ?? false)
+  );
+
+  const pinnedNotes = filteredNotes.filter(n => n.pinned);
+  const unpinnedNotes = filteredNotes.filter(n => !n.pinned);
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-        
-        {/* Animated Gradient Header */}
-        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-8 text-center">
-          <div className="inline-flex p-3 bg-white/20 backdrop-blur-md rounded-2xl mb-4">
-            <span className="text-3xl">✨</span>
+    <div className="min-h-screen bg-pink-50 p-6 flex flex-col items-center">
+      <h1 className="text-4xl font-bold text-pink-600 mb-4">My Notes</h1>
+      <p className="mb-6 text-gray-600">{notes.length} notes</p>
+
+      <button
+        onClick={() => setShowNewNote(true)}
+        className="mb-6 px-6 py-2 rounded bg-pink-500 text-white hover:bg-pink-600"
+      >
+        + New Note
+      </button>
+
+      <input
+        type="text"
+        placeholder="Search notes by title, content, or tags..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="w-full max-w-lg p-2 mb-6 border border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
+      />
+
+      {pinnedNotes.length > 0 && (
+        <div className="w-full max-w-lg mb-6">
+          <h2 className="text-lg font-bold text-pink-600 mb-2">Pinned</h2>
+          <div className="grid gap-4">
+            {pinnedNotes.map(note => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onDelete={deleteNote}
+                onTogglePin={togglePin}
+                onEdit={editNote}
+              />
+            ))}
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Tailwind Check
-          </h1>
         </div>
+      )}
 
-        {/* Content Body */}
-        <div className="p-8">
-          <p className="text-slate-600 leading-relaxed mb-6">
-            If this looks like a <span className="font-bold text-indigo-600">stylish card</span> and not a wall of plain text, your Tailwind v3 installation is active.
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-medium text-slate-700 font-mono italic">
-                Vite 7 + React 19 detected
-              </span>
-            </div>
-            
-            <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-6 rounded-xl transition-all active:scale-95 shadow-lg shadow-indigo-200">
-              Interaction Test
-            </button>
+      <div className="w-full max-w-lg mb-6">
+        <h2 className="text-lg font-bold text-pink-600 mb-2">All Notes</h2>
+        {unpinnedNotes.length === 0 ? (
+          <p className="text-pink-400">No notes yet. Create your first note to get started!</p>
+        ) : (
+          <div className="grid gap-4">
+            {unpinnedNotes.map(note => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onDelete={deleteNote}
+                onTogglePin={togglePin}
+                onEdit={editNote}
+              />
+            ))}
           </div>
-        </div>
-
-        {/* Responsive Legend */}
-        <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Screen: <span className="text-indigo-500 sm:hidden underline decoration-indigo-500">Mobile</span>
-            <span className="hidden sm:inline text-indigo-500 underline decoration-indigo-500 font-bold">Tablet/Desktop</span>
-          </span>
-        </div>
+        )}
       </div>
-      
-      <p className="mt-8 text-slate-400 text-sm italic">
-        Check your terminal to ensure Vite is watching for changes.
-      </p>
+
+      {/* New Note / Edit Note Popup */}
+      {(showNewNote || editingNote) && (
+        <NewNoteCard
+          onSave={addNote}
+          onCancel={() => {
+            setShowNewNote(false);
+            setEditingNote(null);
+          }}
+          {...(editingNote ? { initialData: editingNote } : {})}
+        />
+      )}
     </div>
   );
 };
