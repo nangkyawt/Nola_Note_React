@@ -39,10 +39,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
       {/* Login Card */}
       <div className="relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-10 flex flex-col items-center overflow-hidden">
-        <h1 className="text-5xl font-extrabold text-pink-600 mb-4 flex items-center justify-center gap-2">
-          <img src={NoteIcon} alt="note" className="w-10 h-10" />
-        Nola
-        </h1>
+  <h1 
+  className="text-5xl font-extrabold text-pink-600 mb-4 flex items-center justify-center gap-2"
+  style={{fontFamily:"Quicksand"}}
+>
+  <img src={NoteIcon} alt="note" className="w-10 h-10" />
+  Nola
+</h1>
         <p className="text-center text-pink-400 mb-8">Your magical note world ✨</p>
 
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-5">

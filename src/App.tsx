@@ -4,6 +4,7 @@ import type { Note } from "./types";
 import NewNoteCard from "./components/NewNoteCard";
 import NoteCard from "./components/NoteCards";
 import NoteIcon from "./assets/images/note.png"; 
+import { SearchIcon } from "@heroicons/react/outline";
 
 const App: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -44,7 +45,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-pink-50 p-6 flex flex-col items-center">
-   <h1 className="text-4xl font-bold text-pink-600 mb-4 flex items-center gap-2">
+  <h1
+  className="text-4xl font-bold text-pink-600 mb-4 flex items-center gap-2"
+  style={{ fontFamily: "Quicksand" }}
+>
   <img src={NoteIcon} alt="note icon" className="w-8 h-8" />
   MyNotes
 </h1>
@@ -57,14 +61,17 @@ const App: React.FC = () => {
         + New Note
       </button>
 
-      <input
-        type="text"
-        placeholder="Search notes by title, content, or tags..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="w-full max-w-lg p-2 mb-6 border border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
-      />
+     <div className="relative w-full max-w-lg mb-6">
+  <SearchIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
 
+  <input
+    type="text"
+    placeholder="Search notes by title, content, or tags..."
+    value={search}
+    onChange={e => setSearch(e.target.value)}
+    className="w-full pl-10 pr-3 py-2 border border-pink-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 shadow-sm"
+  />
+</div>
       {pinnedNotes.length > 0 && (
         <div className="w-full max-w-lg mb-6">
           <h2 className="text-lg font-bold text-pink-600 mb-2">Pinned</h2>

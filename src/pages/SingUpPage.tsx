@@ -48,10 +48,13 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp }) => {
       {/* Sign Up Card */}
       <div className="relative w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-10 flex flex-col items-center overflow-hidden">
         {/* Title with note icon */}
-        <h1 className="text-5xl font-extrabold text-pink-600 mb-4 flex items-center justify-center gap-2">
-          <img src={NoteIcon} alt="note" className="w-10 h-10" />
-         Nola
-        </h1>
+      <h1 
+  className="text-5xl font-extrabold text-pink-600 mb-4 flex items-center justify-center gap-2"
+  style={{fontFamily:"Quicksand"}}
+>
+  <img src={NoteIcon} alt="note" className="w-10 h-10" />
+  Nola
+</h1>
         <p className="text-center text-pink-400 mb-8">Create your magical note account ✨</p>
 
         <form onSubmit={handleSignUp} className="w-full flex flex-col gap-5">
@@ -97,7 +100,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-pink-400 hover:text-pink-600 transition-transform transform hover:scale-110"
             >
-              {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              {showPassword ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
             </button>
           </div>
 
@@ -117,7 +120,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp }) => {
               onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-pink-400 hover:text-pink-600 transition-transform transform hover:scale-110"
             >
-              {showConfirm ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              {showConfirm ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
             </button>
           </div>
 
