@@ -5,8 +5,8 @@ import { TrashIcon, PencilIcon } from "@heroicons/react/outline";
 
 interface NoteCardProps {
   note: Note;
-  onDelete: (id: number) => void;
-  onTogglePin: (id: number) => void;
+  onDelete: (id: string) => void;
+  onTogglePin: (note: Note) => void;
   onEdit: (note: Note) => void;
 }
 
@@ -17,11 +17,9 @@ const NoteCard: React.FC<NoteCardProps> = ({
   onEdit,
 }) => {
   return (
-    <div
-      className={`relative p-3 sm:p-4 rounded-2xl shadow-md flex flex-col transition hover:shadow-xl ${
-        note.color || "bg-white"
-      }`}
-    >
+   <div
+  className={`relative p-3 sm:p-4 rounded-2xl shadow-md flex flex-col transition hover:shadow-xl ${note.color}`}
+>
       {/* Pinned badge */}
       {note.pinned && (
         <span className="absolute top-2 right-2 text-yellow-400 text-xl">
@@ -39,7 +37,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
         <div className="flex gap-1 sm:gap-2 items-center">
           {/* Pin toggle */}
           <button
-            onClick={() => onTogglePin(note.id)}
+            onClick={() => onTogglePin(note)}
             className="text-pink-500 hover:text-pink-700"
           >
             {note.pinned ? "📌" : "📍"}
@@ -55,7 +53,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
 
           {/* Delete icon */}
           <button
-            onClick={() => onDelete(note.id)}
+            onClick={() => onDelete(note._id)}
             className="text-red-500 hover:text-red-700"
           >
             <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -86,4 +84,3 @@ const NoteCard: React.FC<NoteCardProps> = ({
 };
 
 export default NoteCard;
-

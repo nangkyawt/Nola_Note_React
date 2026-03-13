@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import type { Note } from "../types";
+import type { NewNote } from "../types";
 import { TagIcon } from "@heroicons/react/outline";
 
 interface NewNoteCardProps {
-  onSave: (note: Note) => void;
+  onSave: (note: NewNote) => void; // use NewNote for creation
   onCancel: () => void;
 }
 
@@ -16,7 +17,6 @@ const colors = [
   "bg-blue-100",
   "bg-purple-100",
 ];
-
 const emojis = ["📝", "💡", "⭐", "💖", "📌"];
 
 const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel }) => {
@@ -27,29 +27,21 @@ const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel }) => {
   const [tags, setTags] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
 
-  const handleSave = () => {
-    if (!title.trim() && !content.trim()) return;
+const handleSave = () => {
+  if (!title.trim() && !content.trim()) return;
 
-    onSave({
-      id: Date.now(),
-      title,
-      content,
-      color,
-      emoji,
-      pinned: false,
-      tags: tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t),
-      text: "",
-    });
-
-    setTitle("");
-    setContent("");
-    setTags("");
-    setColor(colors[0]);
-    setEmoji(emojis[0]);
+  const newNote: NewNote = {
+    title,
+    content,
+    color,
+    emoji,
+    pinned: false,
+    tags: tags ? tags.split(",").map(t => t.trim()) : [],
+    text: content,
   };
+
+  onSave(newNote); // backend will generate _id
+};
 
   return (
     <div className="fixed inset-0 bg-black/30 flex justify-center items-center p-4 z-50">
@@ -58,9 +50,7 @@ const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel }) => {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            New Note
-          </h2>
+          <h2 className="text-xl font-bold flex items-center gap-2">New Note</h2>
           <button
             onClick={onCancel}
             className="text-red-500 font-bold text-lg hover:text-red-600 transition"
@@ -129,19 +119,19 @@ const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel }) => {
         </div>
 
         {/* Color Picker */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2">
-            {colors.map((c) => (
-              <button
-                key={c}
-                className={`w-8 h-8 rounded-full border ${c} ${
-                  color === c ? "ring-2 ring-pink-500" : ""
-                }`}
-                onClick={() => setColor(c)}
-              />
-            ))}
-          </div>
-        </div>
+     <div className="flex justify-between items-center mb-4">
+  <div className="flex gap-2">
+    {colors.map((c) => (
+      <button
+        key={c}
+        className={`w-8 h-8 rounded-full border ${c} ${
+          color === c ? "ring-2 ring-pink-500" : ""
+        }`}
+        onClick={() => setColor(c)}
+      />
+    ))}
+  </div>
+</div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-2">
