@@ -33,14 +33,14 @@ const handleSave = () => {
   const newNote: NewNote = {
     title,
     content,
-    color,
-    emoji,
+    color,  
+    emoji,  
     pinned: false,
     tags: tags ? tags.split(",").map(t => t.trim()) : [],
     text: content,
   };
-
-  onSave(newNote); // backend will generate _id
+  console.log("Saving note:", newNote); 
+  onSave(newNote); 
 };
 
   return (

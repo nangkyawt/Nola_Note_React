@@ -17,9 +17,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
   onEdit,
 }) => {
   return (
-   <div
-  className={`relative p-3 sm:p-4 rounded-2xl shadow-md flex flex-col transition hover:shadow-xl ${note.color}`}
->
+   <div className={`relative p-3 sm:p-4 rounded-2xl shadow-md flex flex-col transition hover:shadow-xl ${note.color || "bg-white"}`}>
       {/* Pinned badge */}
       {note.pinned && (
         <span className="absolute top-2 right-2 text-yellow-400 text-xl">

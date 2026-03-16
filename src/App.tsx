@@ -15,48 +15,30 @@ const App: React.FC = () => {
   const [search, setSearch] = useState("");
 
   // Fetch notes
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const res = await getNotes();
-        const notesWithDefaults = res.data.map((note: any) => ({
-          _id: note._id,
-          title: note.title || "Untitled",
-          content: note.content || "",
-          color: note.color || "bg-white",
-          emoji: note.emoji || "📝",
-          pinned: note.pinned ?? false,
-          tags: note.tags || [],
-          text: note.text || "",
-        }));
-        setNotes(notesWithDefaults);
-      } catch (err) {
-        console.error("Failed to fetch notes:", err);
-      }
-    };
-    fetchNotes();
-  }, []);
-
-  // Add note
-  const addNote = async (note: NewNote) => {
+useEffect(() => {
+  const fetchNotes = async () => {
     try {
-      const res = await createNote(note);
-
-      const savedNote: Note = {
-        ...res.data,
-        color: note.color,
-        emoji: note.emoji,
-        pinned: note.pinned,
-        tags: note.tags,
-        text: note.text,
-      };
-
-      setNotes([savedNote, ...notes]);
-      setShowNewNote(false);
+      const res = await getNotes();
+      console.log("Notes from backend:", res.data);
+      setNotes(res.data); // <-- use color from backend directly
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch notes:", err);
     }
   };
+  fetchNotes();
+}, []);
+
+  // Add note
+const addNote = async (note: NewNote) => {
+  try {
+    const res = await createNote(note);  // <-- note contains color & emoji
+    console.log("Saved note:", res.data); // should now include color & emoji
+    setNotes((prev) => [res.data, ...prev]);
+    setShowNewNote(false);
+  } catch (err) {
+    console.error("Error adding note:", err);
+  }
+};
 
   // Delete note
   const deleteNoteHandler = async (id: string) => {
@@ -70,30 +52,33 @@ const App: React.FC = () => {
   };
 
   // Toggle pin
-const togglePinHandler = async (note: Note) => {
-  // Optimistic update
-  setNotes(notes.map((n) =>
-    n._id === note._id ? { ...n, pinned: !n.pinned } : n
-  ));
-
+ const togglePinHandler = async (note: Note) => {
   try {
-    await updateNote(note._id, { pinned: !note.pinned });
+    // Send all fields, just toggle pinned
+    const updatedNote = await updateNote(note._id, {
+      ...note,
+      pinned: !note.pinned,
+    });
+
+    // Update frontend with the full note from backend
+    setNotes(notes.map(n => n._id === note._id ? updatedNote.data : n));
+
   } catch (err) {
     console.error("Toggle pin error:", err);
     alert("Failed to toggle pin");
-    // Revert if API fails
-    setNotes(notes.map((n) =>
-      n._id === note._id ? { ...n, pinned: note.pinned } : n
-    ));
   }
 };
-  // Search filter
-const filteredNotes = notes
-  .filter(
-    (n) =>
-      n.title.toLowerCase().includes(search.toLowerCase()) ||
-      n.content.toLowerCase().includes(search.toLowerCase())
-  )
+
+  // Filtered and sorted notes for search
+ const filteredNotes = notes
+  .filter((n) => {
+    const searchLower = search.toLowerCase();
+    return (
+      n.title.toLowerCase().includes(searchLower) ||
+      n.content.toLowerCase().includes(searchLower) ||
+      (n.tags && n.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+    );
+  })
   .sort((a, b) => (b.pinned === a.pinned ? 0 : b.pinned ? 1 : -1));
 
   return (
@@ -138,12 +123,12 @@ const filteredNotes = notes
           </div>
 
           {/* New Note Button */}
-  <button
-  onClick={() => setShowNewNote(true)}
-  className="px-3 py-1.5 bg-pink-500 text-white rounded-full shadow hover:bg-pink-600 transition text-sm flex items-center gap-1"
->
-  + New
-</button>
+          <button
+            onClick={() => setShowNewNote(true)}
+            className="px-3 py-1.5 bg-pink-500 text-white rounded-full shadow hover:bg-pink-600 transition text-sm flex items-center gap-1"
+          >
+            + New
+          </button>
         </div>
       </div>
 
@@ -154,45 +139,47 @@ const filteredNotes = notes
           onCancel={() => setShowNewNote(false)}
         />
       )}
+      {/* <NewNoteCard
+  onSave={(note: NewNote) => addNote(note)}  // <-- pass the full note object from modal
+  onCancel={() => setShowNewNote(false)}
+/> */}
 
       {/* Notes */}
-<div className="w-full max-w-5xl mx-auto px-4 mb-10">
+      <div className="w-full max-w-5xl mx-auto px-4 mb-10">
 
-  {/* Pinned Notes Section */}
-  {notes.some(n => n.pinned) && (
-    <>
-      <h2 className="text-lg font-semibold text-pink-600 mb-2">Pinned</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {notes.filter(n => n.pinned).map(note => (
-          <NoteCard
-            key={note._id}
-            note={note}
-            onDelete={deleteNoteHandler}
-            onTogglePin={() => togglePinHandler(note)}
-            onEdit={() => {}}
-          />
-        ))}
+        {/* Pinned Notes */}
+        {notes.some(n => n.pinned) && (
+          <>
+            <h2 className="text-lg font-semibold text-pink-600 mb-4">Pinned</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {notes.filter(n => n.pinned).map(note => (
+                <NoteCard
+                  key={note._id}
+                  note={note}
+                  onDelete={deleteNoteHandler}
+                  onTogglePin={() => togglePinHandler(note)}
+                  onEdit={() => {}}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* All Notes */}
+        <h2 className="text-lg font-semibold text-pink-600 mb-4">All Notes</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {notes.filter(n => !n.pinned).map(note => (
+            <NoteCard
+              key={note._id}
+              note={note}
+              onDelete={deleteNoteHandler}
+              onTogglePin={() => togglePinHandler(note)}
+              onEdit={() => {}}
+            />
+          ))}
+        </div>
+
       </div>
-    </>
-  )}
-
-  {/* All Notes Section with responsive spacing */}
-  <div className="mt-6 sm:mt-10">
-    <h2 className="text-lg font-semibold text-pink-600 mb-2">All Notes</h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {notes.filter(n => !n.pinned).map(note => (
-        <NoteCard
-          key={note._id}
-          note={note}
-          onDelete={deleteNoteHandler}
-          onTogglePin={() => togglePinHandler(note)}
-          onEdit={() => {}}
-        />
-      ))}
-    </div>
-  </div>
-
-</div>
     </div>
   );
 };
