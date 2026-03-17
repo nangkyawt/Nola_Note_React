@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import type { NewNote } from "../types";
+import type { NewNote, Note } from "../types";
 import { TagIcon } from "@heroicons/react/outline";
 
 interface NewNoteCardProps {
+  initialNote: Note | null; 
   onSave: (note: NewNote) => void; // use NewNote for creation
   onCancel: () => void;
 }
@@ -19,29 +20,30 @@ const colors = [
 ];
 const emojis = ["📝", "💡", "⭐", "💖", "📌"];
 
-const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel }) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [color, setColor] = useState(colors[0]);
-  const [emoji, setEmoji] = useState(emojis[0]);
-  const [tags, setTags] = useState("");
-  const [showEmoji, setShowEmoji] = useState(false);
+const NewNoteCard: React.FC<NewNoteCardProps> = ({ onSave, onCancel, initialNote }) => {
 
-const handleSave = () => {
-  if (!title.trim() && !content.trim()) return;
+  const [title, setTitle] = useState(initialNote?.title || "");
+  const [content, setContent] = useState(initialNote?.content || "");
+  const [color, setColor] = useState(initialNote?.color || colors[0]);
+  const [emoji, setEmoji] = useState(initialNote?.emoji || emojis[0]);
+  const [tags, setTags] = useState(initialNote?.tags?.join(",") || "");
+  const [showEmoji, setShowEmoji] = useState(false); // ✅ added
 
-  const newNote: NewNote = {
-    title,
-    content,
-    color,  
-    emoji,  
-    pinned: false,
-    tags: tags ? tags.split(",").map(t => t.trim()) : [],
-    text: content,
+  const handleSave = () => {
+    if (!title.trim() && !content.trim()) return;
+
+    const newNote: NewNote = {
+      title,
+      content,
+      color,  
+      emoji,  
+      pinned: false,
+      tags: tags ? tags.split(",").map(t => t.trim()) : [],
+      text: content,
+    };
+    console.log("Saving note:", newNote); 
+    onSave(newNote); 
   };
-  console.log("Saving note:", newNote); 
-  onSave(newNote); 
-};
 
   return (
     <div className="fixed inset-0 bg-black/30 flex justify-center items-center p-4 z-50">
@@ -63,7 +65,7 @@ const handleSave = () => {
         <div className="relative mb-2">
           <span
             className="absolute left-2 top-1/2 -translate-y-1/2 text-2xl cursor-pointer"
-            onClick={() => setShowEmoji(!showEmoji)}
+            onClick={() => setShowEmoji(!showEmoji)} // ✅ fixed
           >
             {emoji}
           </span>
@@ -84,11 +86,9 @@ const handleSave = () => {
                   key={e}
                   onClick={() => {
                     setEmoji(e);
-                    setShowEmoji(false);
+                    setShowEmoji(false); // ✅ fixed
                   }}
-                  className={`text-lg ${
-                    emoji === e ? "scale-125" : ""
-                  } hover:scale-125 transition-transform`}
+                  className={`text-lg ${emoji === e ? "scale-125" : ""} hover:scale-125 transition-transform`}
                 >
                   {e}
                 </button>
@@ -119,19 +119,19 @@ const handleSave = () => {
         </div>
 
         {/* Color Picker */}
-     <div className="flex justify-between items-center mb-4">
-  <div className="flex gap-2">
-    {colors.map((c) => (
-      <button
-        key={c}
-        className={`w-8 h-8 rounded-full border ${c} ${
-          color === c ? "ring-2 ring-pink-500" : ""
-        }`}
-        onClick={() => setColor(c)}
-      />
-    ))}
-  </div>
-</div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-2">
+            {colors.map((c) => (
+              <button
+                key={c}
+                className={`w-8 h-8 rounded-full border ${c} ${
+                  color === c ? "ring-2 ring-pink-500" : ""
+                }`}
+                onClick={() => setColor(c)}
+              />
+            ))}
+          </div>
+        </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-2">

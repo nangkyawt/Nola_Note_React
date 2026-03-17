@@ -17,46 +17,51 @@ const NoteCard: React.FC<NoteCardProps> = ({
   onEdit,
 }) => {
   return (
-   <div className={`relative p-3 sm:p-4 rounded-2xl shadow-md flex flex-col transition hover:shadow-xl ${note.color || "bg-white"}`}>
+    <div
+      className={`relative p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col transition-transform duration-300 hover:shadow-2xl hover:scale-105 ${note.color || "bg-white"}`}
+    >
       {/* Pinned badge */}
       {note.pinned && (
-        <span className="absolute top-2 right-2 text-yellow-400 text-xl">
+        <span className="absolute top-2 right-2 text-yellow-400 text-xl drop-shadow-md">
           📌
         </span>
       )}
 
       {/* Title + Emoji + Actions */}
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-bold text-base sm:text-lg flex items-center gap-2">
-          <span className="text-lg sm:text-xl">{note.emoji || "📝"}</span>
+      <div className="flex justify-between items-start mb-3">
+        <h3 className="font-bold text-base sm:text-lg flex items-center gap-3">
+          {/* Emoji Badge */}
+          <span className="w-7 h-7 flex items-center justify-center rounded-full bg-white/50 text-lg sm:text-xl shadow-sm">
+            {note.emoji || "📝"}
+          </span>
           {note.title || "Untitled"}
         </h3>
 
-        <div className="flex gap-1 sm:gap-2 items-center">
-          {/* Pin toggle */}
-          <button
-            onClick={() => onTogglePin(note)}
-            className="text-pink-500 hover:text-pink-700"
-          >
-            {note.pinned ? "📌" : "📍"}
-          </button>
+<div className="flex gap-2 items-center">
+  {/* Pin toggle */}
+  <button
+    onClick={() => onTogglePin(note)}
+    className="bg-white/30 p-1 rounded-full shadow hover:bg-yellow-200 transition-transform hover:scale-110"
+  >
+    {note.pinned ? "📌" : "📍"}
+  </button>
 
-          {/* Edit icon */}
-          <button
-            onClick={() => onEdit(note)}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <PencilIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+  {/* Edit icon */}
+  <button
+    onClick={() => onEdit(note)}
+    className="bg-white/30 p-1 rounded-full shadow hover:bg-blue-200 transition-transform hover:scale-110"
+  >
+    <PencilIcon className="w-4 h-4 text-blue-600" />
+  </button>
 
-          {/* Delete icon */}
-          <button
-            onClick={() => onDelete(note._id)}
-            className="text-red-500 hover:text-red-700"
-          >
-            <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-        </div>
+  {/* Delete icon */}
+  <button
+    onClick={() => onDelete(note._id)}
+    className="bg-white/30 p-1 rounded-full shadow hover:bg-red-200 transition-transform hover:scale-110"
+  >
+    <TrashIcon className="w-4 h-4 text-red-600" />
+  </button>
+</div>
       </div>
 
       {/* Content */}
@@ -64,19 +69,25 @@ const NoteCard: React.FC<NoteCardProps> = ({
         {note.content}
       </p>
 
-      {/* Tags */}
-      {note.tags && note.tags.length > 0 && (
-        <div className="flex gap-1 flex-wrap mt-auto">
-          {note.tags.map((tag) => (
+      {/* Footer: tags + time */}
+      <div className="flex justify-between items-center mt-auto text-gray-500 text-xs sm:text-sm">
+        {/* Tags */}
+        <div className="flex gap-1 flex-wrap">
+          {note.tags && note.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[10px] sm:text-xs px-2 py-1 bg-white/70 rounded-full text-pink-600"
+              className="text-[10px] sm:text-xs px-2 py-1 bg-white/30 backdrop-blur-sm rounded-full text-purple-600 font-medium"
             >
               #{tag}
             </span>
           ))}
         </div>
-      )}
+
+        {/* Time & Date */}
+        <span className="italic text-gray-400">
+          {new Date(note.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} • {new Date(note.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+        </span>
+      </div>
     </div>
   );
 };

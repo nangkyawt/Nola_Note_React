@@ -1,14 +1,3 @@
-// export interface Note {
-//   [x: string]: string;
-//   _id: number;
-//   title: string;
-//   content: string;
-//   pinned?: boolean;
-//   text: string;
-//   color?: string;      // background color
-//   emoji?: string;      // note emoji
-//   tags?: string[]; 
-// }
 export interface Note {
   _id: string;
   title: string;
@@ -18,6 +7,8 @@ export interface Note {
   pinned: boolean;
   tags: string[];
   text: string;
+  createdAt: string; // string from backend, can convert to Date in UI
+  updatedAt?: string; // optional updated date
 }
 
 export interface NewNote {
