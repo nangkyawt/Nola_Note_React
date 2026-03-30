@@ -4,7 +4,7 @@ import { SearchIcon, BellIcon } from "@heroicons/react/outline";
 
 interface NavbarProps {
  username: string;
-  isLoggedIn: boolean; // add this line
+  isLoggedIn: boolean;
   onLogin: () => void;
   onLogout: () => void;
 }
