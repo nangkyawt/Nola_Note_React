@@ -36,12 +36,13 @@ const handleLogin = async (e: React.FormEvent) => {
     }
 
     // save token notes by each user 
-    localStorage.setItem("token", data.token);
-    console.log("Backend response:", data); 
+localStorage.setItem("token", data.token);
+console.log("Backend response:", data); 
 localStorage.setItem("user", JSON.stringify(data.user));window.dispatchEvent(new Event("storage"));
-    console.log("Login successful, calling onLogin"); 
+console.log("Login successful, calling onLogin"); 
 
 localStorage.setItem("auth", JSON.stringify({ token: data.token, user: data.user }));
+
 onLogin();
 navigate("/notes", { 
   state: { toastMessage: "Logged in successfully!", toastType: "success" } 

@@ -8,7 +8,7 @@ import type { Note, NewNote } from "./types";
 import { getNotes, createNote, deleteNote, updateNote } from "./service/api";
 import Navbar from "./components/Navbar";
 import NoteIcon from "./assets/images/note.png";
-import { useNavigate, Routes, Route ,  useLocation} from "react-router-dom";
+import { useNavigate, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import CalendarPage from "./pages/CalendarPage";
 import Toast from "./components/Toast"; 
 import LoginPage from "./pages/LoginPage";
@@ -22,22 +22,33 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ADD TOP-LEVEL TOAST 
+  // TOAST STATE
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
+  const [username, setUsername] = useState<string | null>(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        return user.username;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
-    console.log("showToast called with:", message, type); 
     setToastMessage(message);
     setToastType(type);
   };
-// Show toast if navigation state has message
-useEffect(() => {
-  if (location.state?.toastMessage) {
-    showToast(location.state.toastMessage, location.state.toastType || "success");
-    window.history.replaceState({}, document.title); 
-  }
-}, [location.state]);
+
+  useEffect(() => {
+    if (location.state?.toastMessage) {
+      showToast(location.state.toastMessage, location.state.toastType || "success");
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -45,19 +56,40 @@ useEffect(() => {
         const res = await getNotes();
         setNotes(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch notes:", err);
       }
     };
-    fetchNotes();
-  }, []);
+
+    if (username) {
+      fetchNotes();
+    } else {
+      setNotes([]); 
+    }
+
+    const handleUserChange = () => {
+      const updatedUser = localStorage.getItem("user");
+      if (updatedUser) {
+        const user = JSON.parse(updatedUser);
+        setUsername(user.username);
+      } else {
+        setUsername(null);
+        setNotes([]);
+      }
+    };
+
+    window.addEventListener("userChange", handleUserChange);
+    return () => window.removeEventListener("userChange", handleUserChange);
+  }, [username]);
 
   const addNote = async (note: NewNote) => {
     try {
       const res = await createNote(note);
       setNotes((prev) => [res.data, ...prev]);
       setShowNewNote(false);
+      showToast("Note added successfully!", "success");
     } catch (err) {
       console.error(err);
+      showToast("Failed to add note.", "error");
     }
   };
 
@@ -65,8 +97,10 @@ useEffect(() => {
     try {
       await deleteNote(id);
       setNotes(notes.filter((n) => n._id !== id));
+      showToast("Note deleted successfully!", "success");
     } catch (err) {
       console.error(err);
+      showToast("Failed to delete note.", "error");
     }
   };
 
@@ -74,8 +108,10 @@ useEffect(() => {
     try {
       const updatedNote = await updateNote(note._id, { ...note, pinned: !note.pinned });
       setNotes(notes.map((n) => (n._id === note._id ? updatedNote.data : n)));
+      showToast(note.pinned ? "Note unpinned!" : "Note pinned!", "success");
     } catch (err) {
       console.error(err);
+      showToast("Failed to update note.", "error");
     }
   };
 
@@ -108,7 +144,6 @@ useEffect(() => {
 
   return (
     <>
-      {/* TOP-LEVEL TOAST n*/}
       {toastMessage && (
         <Toast
           message={toastMessage}
@@ -118,46 +153,44 @@ useEffect(() => {
       )}
 
       <Routes>
-        {/*  LOGIN PAGE*/}
         <Route
           path="/login"
           element={
-            <LoginPage
-              onLogin={() => {
-                console.log("LoginPage onLogin called");
-                showToast("Logged in successfully!", "success");
-              }}
-            />
+            username ? <Navigate to="/notes" /> : (
+              <LoginPage
+                onLogin={() => {
+                  const user = JSON.parse(localStorage.getItem("user") || "{}");
+                  setUsername(user.username);
+                  showToast("Logged in successfully!", "success");
+                }}
+              />
+            )
           }
         />
 
-        {/* NOTES PAGE */}
         <Route
           path="/"
           element={
             <div className="bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 min-h-screen">
-              {/* Navbar (desktop only) */}
               <div className="hidden sm:block">
                 <Navbar
                   onLogout={() => console.log("Logout")}
-                  isLoggedIn={false}
-                  username=""
+                  isLoggedIn={!!username}
+                  username={username || ""}
                   onLogin={() => {}}
                 />
               </div>
 
-              {/* Mobile Header */}
               <div className="sm:hidden px-4 pt-6 pb-2 flex justify-between items-center">
                 <div>
-                  <p className="text-gray-500 text-sm">Hello, Good Moring👋</p>
-                  <h2 className="text-lg font-semibold text-pink-600">User</h2>
+                  <p className="text-gray-500 text-sm">Hello, Good Morning👋</p>
+                  <h2 className="text-lg font-semibold text-pink-600"> {username || "User"}</h2>  
                 </div>
                 <div className="bg-pink-100 p-2 rounded-full">
                   <UserIcon className="w-5 h-5 text-pink-500" />
                 </div>
               </div>
 
-              {/* Header */}
               <div className="w-full max-w-5xl mx-auto mt-4 sm:mt-10 mb-6 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1
@@ -172,7 +205,6 @@ useEffect(() => {
                   </p>
                 </div>
 
-                {/* Search */}
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <div className="relative w-full sm:w-64">
                     <SearchIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -187,7 +219,6 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* Floating button (desktop only) */}
               <button
                 onClick={() => {
                   setEditingNote(null);
@@ -198,12 +229,11 @@ useEffect(() => {
                 + New
               </button>
 
-              {/* New Note Modal */}
               {showNewNote && (
                 <NewNoteCard
                   initialNote={editingNote ?? null}
                   onSave={(updatedNote) => {
-                    if (editingNote) {
+                    if (editingNote && editingNote._id) {
                       const edited = { ...editingNote, ...updatedNote, pinned: editingNote.pinned };
                       updateNote(edited._id, edited).then((res) => {
                         setNotes(notes.map((n) => (n._id === edited._id ? res.data : n)));
@@ -221,7 +251,6 @@ useEffect(() => {
                 />
               )}
 
-              {/* Notes */}
               <div className="w-full max-w-5xl mx-auto px-4 mb-10 pb-24">
                 {filteredNotes.some((n) => n.pinned) && (
                   <>
@@ -280,18 +309,15 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* Mobile Bottom Navigation */}
               <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t shadow-lg flex justify-around items-center py-2 sm:hidden z-50">
                 <button className="flex flex-col items-center text-pink-500">
                   <HomeIcon className="w-5 h-5" />
                   <span className="text-xs">Notes</span>
                 </button>
-
                 <button className="flex flex-col items-center text-gray-400 hover:text-pink-500 transition">
                   <SearchIcon className="w-5 h-5" />
                   <span className="text-xs">Search</span>
                 </button>
-
                 <button
                   onClick={() => {
                     setEditingNote(null);
@@ -301,12 +327,10 @@ useEffect(() => {
                 >
                   <PlusIcon className="w-6 h-6 text-white" />
                 </button>
-
                 <button className="flex flex-col items-center text-gray-400 hover:text-pink-500 transition">
                   <BookmarkIcon className="w-5 h-5" />
                   <span className="text-xs">Pinned</span>
                 </button>
-
                 <button className="flex flex-col items-center text-gray-400 hover:text-pink-500 transition">
                   <UserIcon className="w-5 h-5" />
                   <span className="text-xs">Me</span>
@@ -316,7 +340,6 @@ useEffect(() => {
           }
         />
 
-        {/* ================= CALENDAR PAGE ================= */}
         <Route
           path="/calendar"
           element={<CalendarPage notes={notes} onAddNoteWithDate={handleAddNoteWithDate} />}

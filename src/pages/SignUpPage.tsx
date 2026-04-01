@@ -52,9 +52,10 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp }) => {
 
       // Save token for future API requests
       localStorage.setItem("token", data.token);
-localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-window.dispatchEvent(new Event("storage"));
+// window.dispatchEvent(new Event("storage"));
+window.dispatchEvent(new Event("userChange"));
       onSignUp();
      showToast("Signup successful!", "success"); 
 setTimeout(() => {
