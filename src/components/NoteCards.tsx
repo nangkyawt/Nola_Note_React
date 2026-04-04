@@ -88,12 +88,14 @@ const NoteCard: React.FC<NoteCardProps> = ({
 
         {/* Time & Date */}
 <span className="italic text-pink-500 font-medium">
-  {new Date(note.updatedAt || note.createdAt).toLocaleTimeString([], { 
-    hour: "2-digit", 
-    minute: "2-digit" 
-  })} • {new Date(note.updatedAt || note.createdAt).toLocaleDateString([], { 
-    month: "short", 
-    day: "numeric" 
+  {new Date(note.updatedAt || note.createdAt).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "long",
+    day: "numeric",
+  })} • {new Date(note.updatedAt || note.createdAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   })}
 </span>
       </div>

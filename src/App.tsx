@@ -275,63 +275,77 @@ const togglePinHandler = async (note: Note) => {
   />
 )}
 
-              <div className="w-full max-w-5xl mx-auto px-4 mb-10 pb-24">
-                {filteredNotes.some((n) => n.pinned) && (
-                  <>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="px-3 py-1 bg-pink-200/40 backdrop-blur-md text-pink-600 font-semibold text-sm rounded-full shadow-sm">
-                        Pinned
-                      </span>
+          <div className="w-full max-w-5xl mx-auto px-4 mb-10 pb-24">
+  {/* Check if there are any pinned notes */}
+  {filteredNotes.some((n) => n.pinned) ? (
+    <>
+      <div className="flex items-center gap-2 mb-4">
+        <span className="px-3 py-1 bg-pink-200/40 backdrop-blur-md text-pink-600 font-semibold text-sm rounded-full shadow-sm">
+          Pinned
+        </span>
+        
+        {/* Calendar appears here because pinned notes exist */}
+        <button
+          onClick={() => navigate("calendar")}
+          className="px-3 py-1 text-sm bg-white/30 rounded-full text-pink-600 border border-pink-100 hover:bg-white/50 transition-colors"
+        >
+          📅 Calendar
+        </button>
+      </div>
 
-                      <button
-                        onClick={() => navigate("calendar")} 
-                        className="px-3 py-1 text-sm bg-white/30 rounded-full text-pink-600"
-                      >
-                        📅 Calendar
-                      </button>
-                    </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {filteredNotes
+          .filter((n) => n.pinned)
+          .map((note) => (
+            <NoteCard
+              key={note._id}
+              note={note}
+              onDelete={deleteNoteHandler}
+              onTogglePin={() => togglePinHandler(note)}
+              onEdit={() => {
+                setEditingNote(note);
+                setShowNewNote(true);
+              }}
+            />
+          ))}
+      </div>
+    </>
+  ) : null}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                      {filteredNotes
-                        .filter((n) => n.pinned)
-                        .map((note) => (
-                          <NoteCard
-                            key={note._id}
-                            note={note}
-                            onDelete={deleteNoteHandler}
-                            onTogglePin={() => togglePinHandler(note)}
-                            onEdit={() => {
-                              setEditingNote(note);
-                              setShowNewNote(true);
-                            }}
-                          />
-                        ))}
-                    </div>
-                  </>
-                )}
+  {/* All Notes Section */}
+  <div className="flex items-center gap-2 mb-4">
+    <span className="px-3 py-1 bg-pink-200/40 backdrop-blur-md text-pink-600 font-semibold text-sm rounded-full shadow-sm">
+      All Notes
+    </span>
 
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-pink-200/40 backdrop-blur-md text-pink-600 font-semibold text-sm rounded-full shadow-sm">
-                    All Notes
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredNotes
-                    .filter((n) => !n.pinned)
-                    .map((note) => (
-                      <NoteCard
-                        key={note._id}
-                        note={note}
-                        onDelete={deleteNoteHandler}
-                        onTogglePin={() => togglePinHandler(note)}
-                        onEdit={() => {
-                          setEditingNote(note);
-                          setShowNewNote(true);
-                        }}
-                      />
-                    ))}
-                </div>
-              </div>
+    {/* Calendar only appears here if NO notes are pinned */}
+    {!filteredNotes.some((n) => n.pinned) && (
+      <button
+        onClick={() => navigate("calendar")}
+        className="px-3 py-1 text-sm bg-white/30 rounded-full text-pink-600 border border-pink-100 hover:bg-white/50 transition-colors"
+      >
+        📅 Calendar
+      </button>
+    )}
+  </div>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {filteredNotes
+      .filter((n) => !n.pinned)
+      .map((note) => (
+        <NoteCard
+          key={note._id}
+          note={note}
+          onDelete={deleteNoteHandler}
+          onTogglePin={() => togglePinHandler(note)}
+          onEdit={() => {
+            setEditingNote(note);
+            setShowNewNote(true);
+          }}
+        />
+      ))}
+  </div>
+</div>
 
               <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t shadow-lg flex justify-around items-center py-2 sm:hidden z-50">
                 <button className="flex flex-col items-center text-pink-500">
